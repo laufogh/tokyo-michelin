@@ -8,6 +8,8 @@ interface FilterBarProps {
   onSelectCuisine: (c: CuisineType) => void;
   selectedStars: MichelinStars | 'all';
   onSelectStars: (s: MichelinStars | 'all') => void;
+  selectedLanguage: 'all' | 'welcoming';
+  onSelectLanguage: (l: 'all' | 'welcoming') => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   sortBy: SortOption;
@@ -22,6 +24,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSelectCuisine,
   selectedStars,
   onSelectStars,
+  selectedLanguage,
+  onSelectLanguage,
   searchQuery,
   onSearchChange,
   sortBy,
@@ -66,6 +70,19 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             </button>
           ))}
         </div>
+
+        {/* Language Advisability Toggle */}
+        <button
+          onClick={() => onSelectLanguage(selectedLanguage === 'all' ? 'welcoming' : 'all')}
+          className={`px-2.5 py-1.5 rounded border text-xs transition ${
+            selectedLanguage === 'welcoming'
+              ? 'bg-neutral-100 text-neutral-950 font-semibold border-neutral-100'
+              : 'bg-neutral-900 text-neutral-400 hover:text-white border-neutral-800'
+          }`}
+          title="Filter for restaurants highly welcoming to non-Japanese speakers"
+        >
+          {selectedLanguage === 'welcoming' ? '✓ No Japanese Needed' : 'No Japanese Needed'}
+        </button>
 
         {/* Sort Dropdown */}
         <div className="flex items-center text-xs">

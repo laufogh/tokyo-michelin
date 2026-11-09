@@ -51,6 +51,11 @@ export interface PriceRange {
   tier: 1 | 2 | 3 | 4 | 5; // 1: <¥5k, 2: ¥5k-15k, 3: ¥15k-30k, 4: ¥30k-50k, 5: >¥50k
 }
 
+export type LanguageAdvisability = 
+  | 'Welcoming (Fluent English)'
+  | 'Friendly (Basic English / Apps)'
+  | 'Challenging (Japanese Preferred)';
+
 export interface Restaurant {
   id: string;
   name: string;
@@ -76,6 +81,8 @@ export interface Restaurant {
   bookingPlatform: BookingPlatform;
   bookingUrl?: string;
   bookingRule: BookingRule;
+  languageAdvisability: LanguageAdvisability;
+  languageNote: string;
   description: string;
   highlights: string[];
   coverImage: string;

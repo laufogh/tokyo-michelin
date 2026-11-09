@@ -18,6 +18,7 @@ export function App() {
   // Filters State
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType>('all');
   const [selectedStars, setSelectedStars] = useState<MichelinStars | 'all'>('all');
+  const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'welcoming'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('michelin');
   const [viewMode, setViewMode] = useState<'split' | 'map' | 'list'>('split');
@@ -74,6 +75,9 @@ export function App() {
         return false;
       }
       if (selectedStars !== 'all' && r.stars !== selectedStars) {
+        return false;
+      }
+      if (selectedLanguage === 'welcoming' && r.languageAdvisability === 'Challenging (Japanese Preferred)') {
         return false;
       }
       if (onlyBookable) {
@@ -162,6 +166,8 @@ export function App() {
           onSelectCuisine={setSelectedCuisine}
           selectedStars={selectedStars}
           onSelectStars={setSelectedStars}
+          selectedLanguage={selectedLanguage}
+          onSelectLanguage={setSelectedLanguage}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           sortBy={sortBy}

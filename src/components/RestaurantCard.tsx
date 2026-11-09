@@ -95,24 +95,41 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
         </div>
       </div>
 
-      {/* Bottom line: Availability & Actions */}
-      <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-800/80 gap-2">
-        {/* Availability indicator */}
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span
-            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-              avail.status === 'open'
+        {/* Bottom line: Availability, Language & Actions */}
+      <div className="flex flex-wrap items-center justify-between text-xs pt-2 border-t border-neutral-800/80 gap-2">
+        {/* Availability & Language */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                avail.status === 'open'
+                  ? 'bg-emerald-400'
+                  : avail.status === 'walk_in'
+                  ? 'bg-sky-400'
+                  : avail.status === 'upcoming'
+                  ? 'bg-amber-400'
+                  : 'bg-neutral-500'
+              }`}
+            />
+            <span className="truncate text-neutral-300 text-[11px]">
+              {avail.badgeText}
+            </span>
+          </div>
+
+          <span className="text-neutral-700">•</span>
+
+          <div className="flex items-center gap-1 text-[11px]">
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+              restaurant.languageAdvisability.startsWith('Welcoming')
                 ? 'bg-emerald-400'
-                : avail.status === 'walk_in'
+                : restaurant.languageAdvisability.startsWith('Friendly')
                 ? 'bg-sky-400'
-                : avail.status === 'upcoming'
-                ? 'bg-amber-400'
-                : 'bg-neutral-500'
-            }`}
-          />
-          <span className="truncate text-neutral-300 text-[11px]">
-            {avail.badgeText}
-          </span>
+                : 'bg-amber-400'
+            }`} />
+            <span className="text-neutral-400 truncate">
+              {restaurant.languageAdvisability.split(' (')[0]}
+            </span>
+          </div>
         </div>
 
         {/* Action Buttons */}

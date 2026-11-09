@@ -107,6 +107,25 @@ export const RestaurantModal: React.FC<RestaurantModalProps> = ({
             )}
           </div>
 
+          {/* Language & Foreigner Advisability */}
+          <div className="border border-neutral-800 rounded-lg p-3 bg-neutral-950/60 space-y-1">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${
+                restaurant.languageAdvisability.startsWith('Welcoming')
+                  ? 'bg-emerald-400'
+                  : restaurant.languageAdvisability.startsWith('Friendly')
+                  ? 'bg-sky-400'
+                  : 'bg-amber-400'
+              }`} />
+              <span className="font-semibold text-neutral-200 text-xs">
+                Non-Japanese Speaker Advisability: {restaurant.languageAdvisability}
+              </span>
+            </div>
+            <p className="text-neutral-400 leading-relaxed text-[11px] pl-4">
+              {restaurant.languageNote}
+            </p>
+          </div>
+
           {/* Description */}
           <p className="text-neutral-400 leading-relaxed text-xs">
             {restaurant.description}

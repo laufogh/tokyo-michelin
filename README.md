@@ -68,7 +68,14 @@ Pill and tab filters for instant exploration:
 - Node.js 18+ (tested on Node v24)
 - npm or pnpm
 
-### Installation
+### Quick Start (Windows)
+Double-click **`start.bat`** (or **`run.bat`**) in the project folder. This will:
+1. Verify Node.js and dependencies (auto-running `npm install` if needed).
+2. Launch the console with live file watching.
+3. Automatically launch your default browser to `http://localhost:5173`.
+4. Register any code changes made (by you or AI assistant) in real-time and automatically refresh the browser via Vite HMR.
+
+### Manual Installation
 ```bash
 # Clone the repository
 git clone https://github.com/laufogh/tokyo-michelin.git

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Restaurant, Currency } from '../types';
-import { formatPriceRange } from '../utils/bookingCalculator';
+import { formatPriceRange, calculateTotalDinnerBreakdown } from '../utils/bookingCalculator';
 import { X, Trash2, Download } from 'lucide-react';
 
 interface WishlistDrawerProps {
@@ -26,12 +26,13 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
     let md = `# Tokyo Michelin Dining Wishlist & Itinerary\n\n`;
     md += `Exported on: ${new Date().toLocaleDateString()}\n\n`;
     savedRestaurants.forEach((r, idx) => {
+      const bd = calculateTotalDinnerBreakdown(r, currency, 2);
       md += `### ${idx + 1}. ${r.name} (${r.nameJapanese})\n`;
       md += `- **Michelin:** ${r.stars === 'Bib Gourmand' ? 'Bib Gourmand' : `${r.stars} Star${typeof r.stars === 'number' && r.stars > 1 ? 's' : ''}`}\n`;
       md += `- **Cuisine:** ${r.cuisineDisplay}\n`;
       md += `- **Ward & Station:** ${r.ward} (${r.nearestStation})\n`;
       md += `- **Tabelog Rating:** ${r.tabelogScore} (${r.tabelogAward})\n`;
-      md += `- **Price (Dinner):** ${formatPriceRange(r.price.dinnerMin, r.price.dinnerMax, currency)}\n`;
+      md += `- **Total Price (2 adults):** ${bd.totalDisplay}${bd.hasFee ? ` (Course: ${bd.baseDisplay} + ${bd.feeLabel}: ${bd.feeDisplay})` : ''}\n`;
       md += `- **Booking Platform:** ${r.bookingPlatform} (${r.bookingUrl || 'Walk-in'})\n`;
       md += `- **Booking Schedule:** ${r.bookingRule.description}\n`;
       md += `- **Address (Taxi):** ${r.addressJapanese}\n\n`;
@@ -114,8 +115,8 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                       ★ {restaurant.tabelogScore} Tabelog
                     </span>
                     <span className="text-slate-500">•</span>
-                    <span className="text-slate-300">
-                      {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency)}
+                    <span className="text-slate-200 font-mono">
+                      {calculateTotalDinnerBreakdown(restaurant, currency, 2).totalDisplay}
                     </span>
                   </div>
                   <div className="text-[10px] text-emerald-400 font-medium mt-1">

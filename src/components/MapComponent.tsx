@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { Restaurant, TravelWindow, Currency } from '../types';
-import { calculateAvailability, formatPriceRange } from '../utils/bookingCalculator';
+import { calculateAvailability, formatPriceRange, calculateTotalDinnerBreakdown } from '../utils/bookingCalculator';
 import { RotateCcw } from 'lucide-react';
 
 interface MapComponentProps {
@@ -98,6 +98,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       const marker = L.marker(restaurant.coordinates, { icon: customIcon });
+      const breakdown = calculateTotalDinnerBreakdown(restaurant, currency, 2);
 
       const popupContent = document.createElement('div');
       popupContent.className = 'text-xs p-1 font-sans text-neutral-900';
@@ -110,7 +111,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           <span>Reddit: <strong>${restaurant.redditRating}</strong></span>
         </div>
         <div style="font-size:11px; color:#525252; margin-bottom:6px;">
-          Dinner (2 adults): <strong>${formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency, 2)}</strong>
+          Total (2 adults): <strong>${breakdown.totalDisplay}</strong>
+          ${breakdown.hasFee ? `<span style="color:#d97706; font-size:10px; display:block;">(incl. ${breakdown.feeDisplay} concierge fee)</span>` : ''}
         </div>
         <div style="font-size:10px; color:#059669; font-weight:600; margin-bottom:8px;">
           ${avail.badgeText}

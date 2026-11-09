@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Restaurant, Currency } from '../types';
-import { formatPriceRange } from '../utils/bookingCalculator';
+import { formatPriceRange, getTotalDinnerPriceJpy, calculateTotalDinnerBreakdown } from '../utils/bookingCalculator';
 import { X, Sparkles, ExternalLink, Zap } from 'lucide-react';
 
 interface ParetoModalProps {
@@ -28,16 +28,16 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Sort pareto points by price for the frontier line
+  // Sort pareto points by total price for the frontier line
   const paretoRestaurants = useMemo(() => {
     return restaurants
       .filter((r) => paretoIds.has(r.id))
-      .sort((a, b) => a.price.dinnerMin - b.price.dinnerMin);
+      .sort((a, b) => getTotalDinnerPriceJpy(a, 'min', 2) - getTotalDinnerPriceJpy(b, 'min', 2));
   }, [restaurants, paretoIds]);
 
   // SVG chart dimensions & scaling
-  const minPrice = useMemo(() => Math.min(...restaurants.map((r) => r.price.dinnerMin * 2 * 0.045)), [restaurants]);
-  const maxPrice = useMemo(() => Math.max(...restaurants.map((r) => r.price.dinnerMin * 2 * 0.045)), [restaurants]);
+  const minPrice = useMemo(() => Math.min(...restaurants.map((r) => getTotalDinnerPriceJpy(r, 'min', 2) * 0.045)), [restaurants]);
+  const maxPrice = useMemo(() => Math.max(...restaurants.map((r) => getTotalDinnerPriceJpy(r, 'min', 2) * 0.045)), [restaurants]);
   const minScore = 3.65;
   const maxScore = 4.70;
 
@@ -57,7 +57,7 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
 
   // Generate frontier path
   const frontierPoints = paretoRestaurants.map((r) => {
-    const priceDkk = r.price.dinnerMin * 2 * 0.045;
+    const priceDkk = getTotalDinnerPriceJpy(r, 'min', 2) * 0.045;
     return `${getX(priceDkk)},${getY(r.tabelogScore)}`;
   });
   const frontierPathData = frontierPoints.length > 0 ? `M ${frontierPoints.join(' L ')}` : '';
@@ -77,7 +77,7 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
                 Tokyo Dining Pareto Front (Price vs. Rating Tradeoff)
               </h3>
               <p className="text-[11px] text-neutral-400">
-                {paretoRestaurants.length} of {restaurants.length} restaurants are on the optimal frontier.
+                {paretoRestaurants.length} of {restaurants.length} restaurants are on the optimal frontier (accounting for hotel concierge & regulars booking fees).
               </p>
             </div>
           </div>
@@ -178,7 +178,7 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
               {restaurants
                 .filter((r) => !paretoIds.has(r.id))
                 .map((r) => {
-                  const priceDkk = r.price.dinnerMin * 2 * 0.045;
+                  const priceDkk = getTotalDinnerPriceJpy(r, 'min', 2) * 0.045;
                   const cx = getX(priceDkk);
                   const cy = getY(r.tabelogScore);
                   return (
@@ -192,14 +192,14 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
                       className="cursor-pointer hover:opacity-100 hover:fill-neutral-200 transition"
                       onClick={() => onOpenDetails(r)}
                     >
-                      <title>{`${r.name}: ${r.tabelogScore} Tabelog | ~${Math.round(priceDkk)} kr. for 2`}</title>
+                      <title>{`${r.name}: ${r.tabelogScore} Tabelog | ~${Math.round(priceDkk)} kr. for 2 (total)`}</title>
                     </circle>
                   );
                 })}
 
               {/* Pareto Optimal Points (Highlighted Amber) */}
               {paretoRestaurants.map((r) => {
-                const priceDkk = r.price.dinnerMin * 2 * 0.045;
+                const priceDkk = getTotalDinnerPriceJpy(r, 'min', 2) * 0.045;
                 const cx = getX(priceDkk);
                 const cy = getY(r.tabelogScore);
                 return (
@@ -227,7 +227,7 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
                     >
                       {r.name.split(' ')[0]}
                     </text>
-                    <title>{`⚡ Pareto Frontier: ${r.name} (${r.tabelogScore} Tabelog, ~${Math.round(priceDkk)} kr. for 2)`}</title>
+                    <title>{`⚡ Pareto Frontier: ${r.name} (${r.tabelogScore} Tabelog, ~${Math.round(priceDkk)} kr. for 2 total)`}</title>
                   </g>
                 );
               })}
@@ -237,31 +237,39 @@ export const ParetoModal: React.FC<ParetoModalProps> = ({
           {/* Pareto Frontier List Table */}
           <div>
             <h4 className="text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">
-              Optimal Frontier Venues (Ranked by Value & Performance)
+              Optimal Frontier Venues (Ranked by Total Cost & Rating)
             </h4>
             <div className="divide-y divide-neutral-800 border border-neutral-800 rounded-lg overflow-hidden bg-neutral-950 text-xs">
-              {paretoRestaurants.map((r) => (
-                <div
-                  key={r.id}
-                  onClick={() => {
-                    onSelectRestaurant(r);
-                    onOpenDetails(r);
-                  }}
-                  className="p-2.5 flex items-center justify-between hover:bg-neutral-900 cursor-pointer transition gap-2"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-amber-400 font-bold">⚡</span>
-                    <span className="font-semibold text-white truncate">{r.name}</span>
-                    <span className="text-neutral-500 text-[11px]">{r.cuisineDisplay}</span>
+              {paretoRestaurants.map((r) => {
+                const breakdown = calculateTotalDinnerBreakdown(r, currency, 2);
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => {
+                      onSelectRestaurant(r);
+                      onOpenDetails(r);
+                    }}
+                    className="p-2.5 flex items-center justify-between hover:bg-neutral-900 cursor-pointer transition gap-2"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-amber-400 font-bold">⚡</span>
+                      <span className="font-semibold text-white truncate">{r.name}</span>
+                      <span className="text-neutral-500 text-[11px]">{r.cuisineDisplay}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 font-mono text-[11px]">
+                      <span className="text-amber-400 font-bold">{r.tabelogScore.toFixed(2)} ★</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-neutral-200 font-medium">{breakdown.totalDisplay}</span>
+                        {breakdown.hasFee && (
+                          <span className="text-[10px] text-amber-400/90 font-sans" title={breakdown.feeDetails}>
+                            (incl. {breakdown.feeDisplay} fee)
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 font-mono text-[11px]">
-                    <span className="text-amber-400 font-bold">{r.tabelogScore.toFixed(2)} ★</span>
-                    <span className="text-neutral-300">
-                      {formatPriceRange(r.price.dinnerMin, r.price.dinnerMax, currency, 2)}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

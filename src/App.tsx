@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { RESTAURANTS_DATA } from './data/restaurants';
 import { Restaurant, CuisineType, MichelinStars, SortOption, Currency, TravelWindow } from './types';
-import { calculateAvailability } from './utils/bookingCalculator';
+import { calculateAvailability, getTotalDinnerPriceJpy } from './utils/bookingCalculator';
 import { computeParetoFront } from './utils/pareto';
 import { Navbar } from './components/Navbar';
 import { TripDateSelector } from './components/TripDateSelector';
@@ -122,10 +122,10 @@ export function App() {
         return b.redditRating - a.redditRating;
       }
       if (sortBy === 'price_asc') {
-        return a.price.dinnerMin - b.price.dinnerMin;
+        return getTotalDinnerPriceJpy(a, 'min', 2) - getTotalDinnerPriceJpy(b, 'min', 2);
       }
       if (sortBy === 'price_desc') {
-        return b.price.dinnerMax - a.price.dinnerMax;
+        return getTotalDinnerPriceJpy(b, 'max', 2) - getTotalDinnerPriceJpy(a, 'max', 2);
       }
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name);

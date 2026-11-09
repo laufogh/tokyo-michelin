@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Restaurant, TravelWindow, Currency } from '../types';
-import { calculateAvailability, formatPriceRange } from '../utils/bookingCalculator';
+import { calculateAvailability, formatPriceRange, calculateTotalDinnerBreakdown } from '../utils/bookingCalculator';
 import { X, Bookmark, ExternalLink, Copy, Check } from 'lucide-react';
 
 interface RestaurantModalProps {
@@ -27,6 +27,7 @@ export const RestaurantModal: React.FC<RestaurantModalProps> = ({
   if (!isOpen || !restaurant) return null;
 
   const avail = calculateAvailability(restaurant, travelWindow);
+  const priceBreakdown = calculateTotalDinnerBreakdown(restaurant, currency, 2);
 
   const handleCopyJapaneseAddress = () => {
     navigator.clipboard.writeText(restaurant.addressJapanese);
@@ -85,11 +86,47 @@ export const RestaurantModal: React.FC<RestaurantModalProps> = ({
               <div className="text-sm font-semibold text-neutral-100 mt-0.5">{restaurant.redditRating.toFixed(1)} ★</div>
             </div>
             <div>
-              <div className="text-[10px] text-neutral-500 uppercase">Dinner (2 adults)</div>
+              <div className="text-[10px] text-neutral-500 uppercase">Total (2 adults)</div>
               <div className="text-xs font-semibold text-neutral-100 mt-0.5 truncate">
-                {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency, 2)}
+                {priceBreakdown.totalDisplay}
               </div>
             </div>
+          </div>
+
+          {/* Price & Booking Fee Breakdown */}
+          <div className="border border-neutral-800 rounded-lg p-3 bg-neutral-950/60 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-neutral-200">Price Calculation (2 Adults)</span>
+              <span className="font-mono font-bold text-neutral-100">{priceBreakdown.totalDisplay}</span>
+            </div>
+            <div className="space-y-1.5 text-[11px] font-mono pt-1 border-t border-neutral-800/80">
+              <div className="flex justify-between text-neutral-400">
+                <span>Base Dinner Course (2 guests):</span>
+                <span>{priceBreakdown.baseDisplay}</span>
+              </div>
+              {priceBreakdown.hasFee ? (
+                <div className="flex justify-between text-amber-400">
+                  <span>{priceBreakdown.feeLabel}:</span>
+                  <span>{priceBreakdown.feeDisplay}</span>
+                </div>
+              ) : (
+                <div className="flex justify-between text-emerald-400">
+                  <span>Online / Walk-in Booking Fee:</span>
+                  <span>0 kr. (Direct)</span>
+                </div>
+              )}
+            </div>
+            {priceBreakdown.feeDetails && (
+              <p className="text-[10px] text-neutral-400 leading-relaxed pt-1.5 border-t border-neutral-800/60">
+                <span className="text-neutral-300 font-semibold">Booking Context: </span>
+                {priceBreakdown.feeDetails}
+              </p>
+            )}
+            {priceBreakdown.hasFee && (
+              <p className="text-[10px] text-neutral-500 italic">
+                Note: When booking via a 5-star hotel concierge (e.g. Aman, Palace Hotel), hotels typically require a registered 1-night room stay (~¥80,000+ / 3,600 kr.) as guarantor.
+              </p>
+            )}
           </div>
 
           {/* Availability Status */}

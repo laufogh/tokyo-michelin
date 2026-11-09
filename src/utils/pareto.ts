@@ -1,4 +1,5 @@
 import { Restaurant } from '../types';
+import { getTotalDinnerPriceJpy } from './bookingCalculator';
 
 export interface ParetoConfig {
   considerTabelog: boolean;
@@ -57,10 +58,10 @@ export function dominates(a: Restaurant, b: Restaurant, config: ParetoConfig = D
     }
   }
 
-  // Objective 3: Price in DKK / JPY for two (Minimize)
+  // Objective 3: Total Price for two including Concierge / Regulars Booking Fees (Minimize)
   if (config.considerPrice) {
-    const priceA = a.price.dinnerMin;
-    const priceB = b.price.dinnerMin;
+    const priceA = getTotalDinnerPriceJpy(a, 'min', 2);
+    const priceB = getTotalDinnerPriceJpy(b, 'min', 2);
     if (priceA > priceB) {
       return false;
     }

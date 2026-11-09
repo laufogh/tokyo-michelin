@@ -37,6 +37,138 @@ export function formatPriceRange(min?: number, max?: number, currency: Currency 
   return `${symbol}${minConverted.toLocaleString('en-US')} – ${symbol}${maxConverted.toLocaleString('en-US')}`;
 }
 
+export function getBookingFeeJpy(restaurant: Restaurant, partySize: number = 2): number {
+  if (restaurant.bookingRule.bookingFeeJpyPerPerson !== undefined) {
+    return restaurant.bookingRule.bookingFeeJpyPerPerson * partySize;
+  }
+  const win = restaurant.bookingRule.windowType;
+  const plat = restaurant.bookingPlatform;
+  const desc = (restaurant.bookingRule.description || '').toLowerCase();
+  const cType = restaurant.bookingRule.conciergeType;
+
+  if (cType === 'regulars_only' || desc.includes('regular') || desc.includes('invitation')) {
+    return 20000 * partySize; // ¥40,000 for 2 adults
+  }
+  if (cType === 'hotel_concierge' || win === 'hotel_concierge_only') {
+    return 8000 * partySize; // ¥16,000 for 2 adults
+  }
+  if (cType === 'phone_concierge' || plat === 'Phone / Concierge') {
+    return 4000 * partySize; // ¥8,000 for 2 adults
+  }
+  return 0;
+}
+
+export function getBookingFeeLabel(restaurant: Restaurant): string {
+  if (restaurant.bookingRule.bookingFeeLabel) {
+    return restaurant.bookingRule.bookingFeeLabel;
+  }
+  const win = restaurant.bookingRule.windowType;
+  const plat = restaurant.bookingPlatform;
+  const desc = (restaurant.bookingRule.description || '').toLowerCase();
+  const cType = restaurant.bookingRule.conciergeType;
+
+  if (cType === 'regulars_only' || desc.includes('regular') || desc.includes('invitation')) {
+    return 'Regulars-Only VIP Proxy Fee';
+  }
+  if (cType === 'hotel_concierge' || win === 'hotel_concierge_only') {
+    return '5-Star Hotel Concierge Fee';
+  }
+  if (cType === 'phone_concierge' || plat === 'Phone / Concierge') {
+    return 'Phone Concierge Assistance Fee';
+  }
+  return 'Booking Fee';
+}
+
+export function getTotalDinnerPriceJpy(restaurant: Restaurant, bound: 'min' | 'max' = 'min', partySize: number = 2): number {
+  const basePerPerson = bound === 'min' ? restaurant.price.dinnerMin : restaurant.price.dinnerMax;
+  const fee = getBookingFeeJpy(restaurant, partySize);
+  return (basePerPerson * partySize) + fee;
+}
+
+export function getTotalLunchPriceJpy(restaurant: Restaurant, bound: 'min' | 'max' = 'min', partySize: number = 2): number | undefined {
+  if (restaurant.price.lunchMin === undefined) return undefined;
+  const basePerPerson = bound === 'min' ? restaurant.price.lunchMin : (restaurant.price.lunchMax ?? restaurant.price.lunchMin);
+  const fee = getBookingFeeJpy(restaurant, partySize);
+  return (basePerPerson * partySize) + fee;
+}
+
+export interface TotalPriceBreakdown {
+  totalDisplay: string;
+  totalMinConverted: number;
+  totalMaxConverted: number;
+  baseDisplay: string;
+  feeDisplay: string;
+  feeJpy: number;
+  hasFee: boolean;
+  feeLabel: string;
+  feeDetails?: string;
+}
+
+export function calculateTotalDinnerBreakdown(
+  restaurant: Restaurant,
+  currency: Currency = 'DKK',
+  partySize: number = 2
+): TotalPriceBreakdown {
+  const { symbol, rate, isSuffix } = CURRENCY_RATES[currency];
+  const feeJpy = getBookingFeeJpy(restaurant, partySize);
+  const hasFee = feeJpy > 0;
+  const feeLabel = getBookingFeeLabel(restaurant);
+  const feeDetails = restaurant.bookingRule.bookingFeeDetails;
+
+  const baseMinJpy = restaurant.price.dinnerMin * partySize;
+  const baseMaxJpy = restaurant.price.dinnerMax * partySize;
+  const totalMinJpy = baseMinJpy + feeJpy;
+  const totalMaxJpy = baseMaxJpy + feeJpy;
+
+  const totalMinConverted = Math.round(totalMinJpy * rate);
+  const totalMaxConverted = Math.round(totalMaxJpy * rate);
+  const baseMinConverted = Math.round(baseMinJpy * rate);
+  const baseMaxConverted = Math.round(baseMaxJpy * rate);
+  const feeConverted = Math.round(feeJpy * rate);
+
+  let totalDisplay = '';
+  let baseDisplay = '';
+  let feeDisplay = '';
+
+  if (currency === 'JPY') {
+    totalDisplay = totalMinJpy === totalMaxJpy
+      ? `¥${totalMinJpy.toLocaleString('ja-JP')}`
+      : `¥${totalMinJpy.toLocaleString('ja-JP')} – ¥${totalMaxJpy.toLocaleString('ja-JP')}`;
+    baseDisplay = baseMinJpy === baseMaxJpy
+      ? `¥${baseMinJpy.toLocaleString('ja-JP')}`
+      : `¥${baseMinJpy.toLocaleString('ja-JP')} – ¥${baseMaxJpy.toLocaleString('ja-JP')}`;
+    feeDisplay = `+¥${feeJpy.toLocaleString('ja-JP')}`;
+  } else if (isSuffix) {
+    totalDisplay = totalMinConverted === totalMaxConverted
+      ? `${totalMinConverted.toLocaleString('da-DK')} ${symbol}`
+      : `${totalMinConverted.toLocaleString('da-DK')} – ${totalMaxConverted.toLocaleString('da-DK')} ${symbol}`;
+    baseDisplay = baseMinConverted === baseMaxConverted
+      ? `${baseMinConverted.toLocaleString('da-DK')} ${symbol}`
+      : `${baseMinConverted.toLocaleString('da-DK')} – ${baseMaxConverted.toLocaleString('da-DK')} ${symbol}`;
+    feeDisplay = `+${feeConverted.toLocaleString('da-DK')} ${symbol}`;
+  } else {
+    totalDisplay = totalMinConverted === totalMaxConverted
+      ? `${symbol}${totalMinConverted.toLocaleString('en-US')}`
+      : `${symbol}${totalMinConverted.toLocaleString('en-US')} – ${symbol}${totalMaxConverted.toLocaleString('en-US')}`;
+    baseDisplay = baseMinConverted === baseMaxConverted
+      ? `${symbol}${baseMinConverted.toLocaleString('en-US')}`
+      : `${symbol}${baseMinConverted.toLocaleString('en-US')} – ${symbol}${baseMaxConverted.toLocaleString('en-US')}`;
+    feeDisplay = `+${symbol}${feeConverted.toLocaleString('en-US')}`;
+  }
+
+  return {
+    totalDisplay,
+    totalMinConverted,
+    totalMaxConverted,
+    baseDisplay,
+    feeDisplay,
+    feeJpy,
+    hasFee,
+    feeLabel,
+    feeDetails,
+  };
+}
+
 export function calculateAvailability(
   restaurant: Restaurant,
   travelWindow?: TravelWindow | null

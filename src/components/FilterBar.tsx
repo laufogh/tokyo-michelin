@@ -125,8 +125,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <option value="michelin">Sort: Michelin Stars</option>
             <option value="tabelog">Sort: Tabelog Score</option>
             <option value="reddit">Sort: Reddit Rating</option>
-            <option value="price_asc">Sort: Price (Low → High)</option>
-            <option value="price_desc">Sort: Price (High → Low)</option>
+            <option value="price_asc">Sort: Total Price (Low → High)</option>
+            <option value="price_desc">Sort: Total Price (High → Low)</option>
             <option value="name">Sort: Name (A-Z)</option>
           </select>
         </div>

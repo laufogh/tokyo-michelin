@@ -33,6 +33,12 @@ export type BookingWindowType =
   | 'walk_in'
   | 'always_open';
 
+export type ConciergeRequirementType = 
+  | 'none' 
+  | 'hotel_concierge' 
+  | 'regulars_only' 
+  | 'phone_concierge';
+
 export interface BookingRule {
   windowType: BookingWindowType;
   advanceDays?: number;
@@ -41,6 +47,10 @@ export interface BookingRule {
   description: string;
   difficulty: 'Easy' | 'Moderate' | 'Hard' | 'Extreme / Lottery';
   tips?: string;
+  conciergeType?: ConciergeRequirementType;
+  bookingFeeJpyPerPerson?: number;
+  bookingFeeLabel?: string;
+  bookingFeeDetails?: string;
 }
 
 export interface PriceRange {

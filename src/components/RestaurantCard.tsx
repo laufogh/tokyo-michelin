@@ -1,6 +1,6 @@
 import React from 'react';
 import { Restaurant, TravelWindow, Currency } from '../types';
-import { calculateAvailability, formatPriceRange } from '../utils/bookingCalculator';
+import { calculateAvailability, formatPriceRange, calculateTotalDinnerBreakdown } from '../utils/bookingCalculator';
 import { Bookmark, ExternalLink } from 'lucide-react';
 
 interface RestaurantCardProps {
@@ -27,6 +27,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
   isPareto,
 }) => {
   const avail = calculateAvailability(restaurant, travelWindow);
+  const priceBreakdown = calculateTotalDinnerBreakdown(restaurant, currency, 2);
 
   return (
     <div
@@ -58,6 +59,14 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
             {isPareto && (
               <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60" title="Pareto Optimal (Optimal Quality for its Price)">
                 ⚡ Pareto
+              </span>
+            )}
+            {priceBreakdown.hasFee && (
+              <span 
+                className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950/70 text-rose-300 border border-rose-800/50" 
+                title={`${priceBreakdown.feeLabel}: ${priceBreakdown.feeDisplay} for 2 adults included in total`}
+              >
+                {priceBreakdown.feeDisplay} concierge
               </span>
             )}
             {/* Michelin Star badge */}
@@ -94,10 +103,15 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
           </div>
           <span className="text-neutral-700">•</span>
           <div>
-            <span className="text-neutral-500 text-[11px]">Dinner (2 adults): </span>
+            <span className="text-neutral-500 text-[11px]">Total (2 adults): </span>
             <span className="text-neutral-200 font-medium">
-              {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency, 2)}
+              {priceBreakdown.totalDisplay}
             </span>
+            {priceBreakdown.hasFee && (
+              <span className="text-[10px] text-amber-400/90 ml-1 font-sans" title={priceBreakdown.feeDetails || `${priceBreakdown.feeLabel}: ${priceBreakdown.feeDisplay}`}>
+                (incl. fee)
+              </span>
+            )}
           </div>
         </div>
       </div>

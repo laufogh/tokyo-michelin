@@ -10,6 +10,10 @@ interface FilterBarProps {
   onSelectStars: (s: MichelinStars | 'all') => void;
   selectedLanguage: 'all' | 'welcoming';
   onSelectLanguage: (l: 'all' | 'welcoming') => void;
+  isOnlyPareto: boolean;
+  onToggleOnlyPareto: () => void;
+  onOpenParetoModal: () => void;
+  paretoCount: number;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   sortBy: SortOption;
@@ -26,6 +30,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSelectStars,
   selectedLanguage,
   onSelectLanguage,
+  isOnlyPareto,
+  onToggleOnlyPareto,
+  onOpenParetoModal,
+  paretoCount,
   searchQuery,
   onSearchChange,
   sortBy,
@@ -69,6 +77,29 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               {star === 'Bib Gourmand' && 'Bib'}
             </button>
           ))}
+        </div>
+
+        {/* Pareto Optimal Filter & Curve Trigger */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onToggleOnlyPareto}
+            className={`px-2.5 py-1.5 rounded border text-xs font-mono transition flex items-center gap-1 ${
+              isOnlyPareto
+                ? 'bg-amber-500 text-neutral-950 font-bold border-amber-500'
+                : 'bg-neutral-900 text-neutral-300 hover:text-white border-neutral-800'
+            }`}
+            title="Filter by Pareto Front (Undominated Quality vs. Price)"
+          >
+            <span>⚡ Pareto Front</span>
+            <span className="text-[10px] opacity-75">({paretoCount})</span>
+          </button>
+          <button
+            onClick={onOpenParetoModal}
+            className="px-2 py-1.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white text-xs transition font-mono"
+            title="View Pareto Tradeoff Curve Chart"
+          >
+            Chart
+          </button>
         </div>
 
         {/* Language Advisability Toggle */}

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { RESTAURANTS_DATA } from './data/restaurants';
 import { Restaurant, CuisineType, MichelinStars, SortOption, Currency, TravelWindow } from './types';
 import { calculateAvailability } from './utils/bookingCalculator';
+import { computeParetoFront } from './utils/pareto';
 import { Navbar } from './components/Navbar';
 import { TripDateSelector } from './components/TripDateSelector';
 import { FilterBar } from './components/FilterBar';
@@ -9,6 +10,7 @@ import { MapComponent } from './components/MapComponent';
 import { RestaurantCard } from './components/RestaurantCard';
 import { RestaurantModal } from './components/RestaurantModal';
 import { WishlistDrawer } from './components/WishlistDrawer';
+import { ParetoModal } from './components/ParetoModal';
 
 export function App() {
   // Travel Window State
@@ -19,6 +21,7 @@ export function App() {
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType>('all');
   const [selectedStars, setSelectedStars] = useState<MichelinStars | 'all'>('all');
   const [selectedLanguage, setSelectedLanguage] = useState<'all' | 'welcoming'>('all');
+  const [isOnlyPareto, setIsOnlyPareto] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('michelin');
   const [viewMode, setViewMode] = useState<'split' | 'map' | 'list'>('split');
@@ -28,6 +31,7 @@ export function App() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [modalRestaurant, setModalRestaurant] = useState<Restaurant | null>(null);
   const [isWishlistOpen, setIsWishlistOpen] = useState<boolean>(false);
+  const [isParetoModalOpen, setIsParetoModalOpen] = useState<boolean>(false);
 
   // Saved Wishlist
   const [savedIds, setSavedIds] = useState<Set<string>>(() => {
@@ -68,9 +72,17 @@ export function App() {
     return counts;
   }, []);
 
+  // Pareto frontier set
+  const paretoIds = useMemo(() => {
+    return computeParetoFront(RESTAURANTS_DATA);
+  }, []);
+
   // Filtered and Sorted Restaurants
   const filteredRestaurants = useMemo(() => {
     return RESTAURANTS_DATA.filter((r) => {
+      if (isOnlyPareto && !paretoIds.has(r.id)) {
+        return false;
+      }
       if (selectedCuisine !== 'all' && r.cuisine !== selectedCuisine) {
         return false;
       }
@@ -123,6 +135,9 @@ export function App() {
   }, [
     selectedCuisine,
     selectedStars,
+    selectedLanguage,
+    isOnlyPareto,
+    paretoIds,
     searchQuery,
     sortBy,
     onlyBookable,
@@ -168,6 +183,10 @@ export function App() {
           onSelectStars={setSelectedStars}
           selectedLanguage={selectedLanguage}
           onSelectLanguage={setSelectedLanguage}
+          isOnlyPareto={isOnlyPareto}
+          onToggleOnlyPareto={() => setIsOnlyPareto((p) => !p)}
+          onOpenParetoModal={() => setIsParetoModalOpen(true)}
+          paretoCount={paretoIds.size}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           sortBy={sortBy}
@@ -200,6 +219,7 @@ export function App() {
                   onToggleSave={() => toggleSave(restaurant.id)}
                   travelWindow={travelWindow}
                   currency={currency}
+                  isPareto={paretoIds.has(restaurant.id)}
                 />
               ))}
             </div>
@@ -232,6 +252,7 @@ export function App() {
                 onToggleSave={() => toggleSave(restaurant.id)}
                 travelWindow={travelWindow}
                 currency={currency}
+                isPareto={paretoIds.has(restaurant.id)}
               />
             ))}
           </div>
@@ -271,6 +292,19 @@ export function App() {
         onRemove={toggleSave}
         onOpenDetails={setModalRestaurant}
         currency={currency}
+      />
+
+      {/* Pareto Frontier Modal */}
+      <ParetoModal
+        isOpen={isParetoModalOpen}
+        onClose={() => setIsParetoModalOpen(false)}
+        restaurants={filteredRestaurants}
+        paretoIds={paretoIds}
+        onSelectRestaurant={setSelectedRestaurant}
+        onOpenDetails={setModalRestaurant}
+        currency={currency}
+        isOnlyPareto={isOnlyPareto}
+        onToggleOnlyPareto={() => setIsOnlyPareto((p) => !p)}
       />
     </div>
   );

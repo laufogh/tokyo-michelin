@@ -12,6 +12,7 @@ interface RestaurantCardProps {
   onToggleSave: () => void;
   travelWindow: TravelWindow | null;
   currency: Currency;
+  isPareto?: boolean;
 }
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({
@@ -23,6 +24,7 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
   onToggleSave,
   travelWindow,
   currency,
+  isPareto,
 }) => {
   const avail = calculateAvailability(restaurant, travelWindow);
 
@@ -53,6 +55,11 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {isPareto && (
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60" title="Pareto Optimal (Optimal Quality for its Price)">
+                ⚡ Pareto
+              </span>
+            )}
             {/* Michelin Star badge */}
             <span className="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-200 border border-neutral-700">
               {restaurant.stars === 'Bib Gourmand' ? 'Bib' : `${restaurant.stars}★`}

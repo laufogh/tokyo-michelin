@@ -69,7 +69,7 @@ Pill and tab filters for instant exploration:
 - npm or pnpm
 
 ### Quick Start (Windows)
-Double-click **`start.bat`** (or **`run.bat`**) in the project folder. This will:
+Double-click **`start.bat`** in the project folder. This will:
 1. Verify Node.js and dependencies (auto-running `npm install` if needed).
 2. Launch the console with live file watching.
 3. Automatically launch your default browser to `http://localhost:5173`.

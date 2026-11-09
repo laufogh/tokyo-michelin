@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-3 text-xs">
           {/* Currency Toggle */}
           <div className="flex items-center border border-neutral-800 rounded bg-neutral-900 overflow-hidden text-[11px] font-mono">
-            {(['JPY', 'USD', 'EUR'] as Currency[]).map((c) => (
+            {(['DKK', 'EUR', 'USD', 'JPY'] as Currency[]).map((c) => (
               <button
                 key={c}
                 onClick={() => onCurrencyChange(c)}

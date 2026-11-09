@@ -87,8 +87,9 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
           </div>
           <span className="text-neutral-700">•</span>
           <div>
-            <span className="text-neutral-200">
-              {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency)}
+            <span className="text-neutral-500 text-[11px]">Dinner (2 adults): </span>
+            <span className="text-neutral-200 font-medium">
+              {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency, 2)}
             </span>
           </div>
         </div>

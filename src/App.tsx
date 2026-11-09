@@ -21,7 +21,7 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('michelin');
   const [viewMode, setViewMode] = useState<'split' | 'map' | 'list'>('split');
-  const [currency, setCurrency] = useState<Currency>('JPY');
+  const [currency, setCurrency] = useState<Currency>('DKK');
 
   // Interaction State
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);

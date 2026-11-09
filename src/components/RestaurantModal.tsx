@@ -85,9 +85,9 @@ export const RestaurantModal: React.FC<RestaurantModalProps> = ({
               <div className="text-sm font-semibold text-neutral-100 mt-0.5">{restaurant.redditRating.toFixed(1)} ★</div>
             </div>
             <div>
-              <div className="text-[10px] text-neutral-500 uppercase">Dinner</div>
+              <div className="text-[10px] text-neutral-500 uppercase">Dinner (2 adults)</div>
               <div className="text-xs font-semibold text-neutral-100 mt-0.5 truncate">
-                {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency)}
+                {formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency, 2)}
               </div>
             </div>
           </div>

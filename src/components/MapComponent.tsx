@@ -110,7 +110,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           <span>Reddit: <strong>${restaurant.redditRating}</strong></span>
         </div>
         <div style="font-size:11px; color:#525252; margin-bottom:6px;">
-          Dinner: ${formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency)}
+          Dinner (2 adults): <strong>${formatPriceRange(restaurant.price.dinnerMin, restaurant.price.dinnerMax, currency, 2)}</strong>
         </div>
         <div style="font-size:10px; color:#059669; font-weight:600; margin-bottom:8px;">
           ${avail.badgeText}

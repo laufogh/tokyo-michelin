@@ -103,7 +103,7 @@ export interface AvailabilityResult {
   colorClass: string;
 }
 
-export type Currency = 'JPY' | 'USD' | 'EUR' | 'GBP';
+export type Currency = 'DKK' | 'EUR' | 'USD' | 'JPY';
 
 export type SortOption = 
   | 'michelin'

@@ -1,26 +1,40 @@
 import { Restaurant, TravelWindow, AvailabilityResult, Currency } from '../types';
 
-export const CURRENCY_RATES: Record<Currency, { symbol: string; rate: number }> = {
-  JPY: { symbol: '¥', rate: 1 },
-  USD: { symbol: '$', rate: 0.0065 }, // ~$1 = ¥154
-  EUR: { symbol: '€', rate: 0.0060 }, // ~€1 = ¥166
-  GBP: { symbol: '£', rate: 0.0051 }, // ~£1 = ¥196
+export const CURRENCY_RATES: Record<Currency, { symbol: string; rate: number; isSuffix?: boolean }> = {
+  DKK: { symbol: 'kr.', rate: 0.045, isSuffix: true },
+  EUR: { symbol: '€', rate: 0.0060, isSuffix: false },
+  USD: { symbol: '$', rate: 0.0065, isSuffix: false },
+  JPY: { symbol: '¥', rate: 1, isSuffix: false },
 };
 
-export function formatPrice(amountJpy: number, currency: Currency = 'JPY'): string {
-  const { symbol, rate } = CURRENCY_RATES[currency];
+export function formatPrice(amountJpy: number, currency: Currency = 'DKK', partySize: number = 2): string {
+  const { symbol, rate, isSuffix } = CURRENCY_RATES[currency];
+  const totalJpy = amountJpy * partySize;
   if (currency === 'JPY') {
-    return `${symbol}${amountJpy.toLocaleString('en-US')}`;
+    return `${symbol}${totalJpy.toLocaleString('ja-JP')}`;
   }
-  const converted = Math.round(amountJpy * rate);
+  const converted = Math.round(totalJpy * rate);
+  if (isSuffix) {
+    return `${converted.toLocaleString('da-DK')} ${symbol}`;
+  }
   return `${symbol}${converted.toLocaleString('en-US')}`;
 }
 
-export function formatPriceRange(min?: number, max?: number, currency: Currency = 'JPY'): string {
+export function formatPriceRange(min?: number, max?: number, currency: Currency = 'DKK', partySize: number = 2): string {
   if (!min && !max) return 'N/A';
-  if (!min) return formatPrice(max!, currency);
-  if (!max) return `From ${formatPrice(min, currency)}`;
-  return `${formatPrice(min, currency)} – ${formatPrice(max, currency)}`;
+  if (!min) return formatPrice(max!, currency, partySize);
+  if (!max) return `From ${formatPrice(min, currency, partySize)}`;
+  
+  const { symbol, rate, isSuffix } = CURRENCY_RATES[currency];
+  if (currency === 'JPY') {
+    return `¥${(min * partySize).toLocaleString('ja-JP')} – ¥${(max * partySize).toLocaleString('ja-JP')}`;
+  }
+  const minConverted = Math.round(min * partySize * rate);
+  const maxConverted = Math.round(max * partySize * rate);
+  if (isSuffix) {
+    return `${minConverted.toLocaleString('da-DK')} – ${maxConverted.toLocaleString('da-DK')} ${symbol}`;
+  }
+  return `${symbol}${minConverted.toLocaleString('en-US')} – ${symbol}${maxConverted.toLocaleString('en-US')}`;
 }
 
 export function calculateAvailability(
